@@ -19,7 +19,7 @@ export default function RegisterUser() {
     };
     useEffect(() => {
         if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-          navigate("/private");
+          navigate("/");
         }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -68,7 +68,7 @@ export default function RegisterUser() {
                     process.env.REACT_APP_LOCALHOST_KEY_TOKEN, 
                     (data.token)
                 )
-                navigate('/private')
+                navigate('/')
             }
         }
     }

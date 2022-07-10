@@ -15,10 +15,9 @@ export default function Chat() {
 	const [currentUser, setCurrentUser] = useState([]);
     const navigate = useNavigate()
     const [contacts, setContacts] = useState([])
+	const [contactss, setContactss] = useState([])
     const [currentChat, setCurrentChat] = useState([undefined])
-		const location = useLocation();
-  	console.log(location.pathname);
-		const socket= useRef()
+	const socket= useRef()
     useEffect(() => {
 		const CheckIfLoggedIn = async () => {
 			if (!localStorage.getItem('chat-app-current-user')) {
@@ -30,12 +29,12 @@ export default function Chat() {
         CheckIfLoggedIn()
     }, [])
 
-		useEffect(() => {
-			if (currentUser.length !== 0) {
-				socket.current = io(host)
-				socket.current.emit('add-user', currentUser._id)
-			}
-		}, [currentUser])
+	useEffect(() => {
+		if (currentUser.length !== 0) {
+			socket.current = io(host)
+			socket.current.emit('add-user', currentUser._id)
+		}
+	}, [currentUser])
 
     useEffect(() => {
 
@@ -43,6 +42,7 @@ export default function Chat() {
             if (currentUser.length !== 0) {
                 if (currentUser.isAvatarImageSet) {
                     const data = await userAxios.get(`${allUsersRoute}/${currentUser._id}`)
+					delete Object.assign(data.data, {chat: data.data.username})['username'];
                     setContacts(data.data)
                 } else {
                     navigate('/setavatar')
@@ -52,8 +52,11 @@ export default function Chat() {
         getContacts()
     }, [currentUser])
 		let handleChatChange = (chat) => {
+			
+			console.log(chat)
 			setCurrentChat(chat)
 		}
+	console.log([socket, 12])
     return (
 		<Container>
 			<div className='container'>

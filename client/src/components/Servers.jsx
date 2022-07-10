@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import whisper from '../assets/whisper.svg'
 import styled from 'styled-components'
-export default function Contacts({contacts, currentUser, changeChat}) {
+import serverimg from '../assets/serverimg.png'
+export default function Servers({ currentUser, changeServer, servers }) {
     const [currentUserName, setCurrentUserName] = useState(undefined)
     const [currentUserImage, setCurrentUserImage] = useState(undefined)
     const [currentSelected, setCurrentSelected] = useState(undefined)
@@ -12,11 +13,9 @@ export default function Contacts({contacts, currentUser, changeChat}) {
             setCurrentUserName(currentUser.username)
         }
     }, [currentUser])
-    const changeCurrentChat = (index, contact) => {
-		console.log(contact)
-		
+    const changeCurrentServer = (index, server) => {
         setCurrentSelected(index)
-        changeChat(contact)
+        changeServer(server)
     }
 
   return (
@@ -29,15 +28,14 @@ export default function Contacts({contacts, currentUser, changeChat}) {
                         <h3>Whisper</h3>
                     </div>
                     <div className='contacts'>
-                        {contacts.map((contact, index) => {
+                        {servers.map((server, index) => {
                             return (
-                                <div className={`contact ${index === currentSelected ? 'selected' : ''}`} key={index} onClick={() => changeCurrentChat(index, contact)} alt="avatar">
+                                <div className={`contact ${index === currentSelected ? 'selected' : ''}`} key={index} onClick={() => changeCurrentServer(index, server)} alt="avatar">
                                     <div className='avatar'>
-                                        <img src={`data:image/svg+xml;base64, ${contact.avatarImage}`} alt='avatar'/>     
+                                        <img src={`data:image/png;base64,${server.avatarImage}`}alt='avatar'/>     
                                     </div>
                                     <div className='username'>
-                                        <h3>{ contact.username ?
-										contact.username : contact.chat} </h3>
+                                        <h3>{server.server}</h3>
                                     </div>
                                 </div>
                             )

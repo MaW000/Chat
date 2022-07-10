@@ -9,6 +9,7 @@ const socket = require('socket.io')
 const createUserRoutes = require('./routes/createUserRoutes')
 const userRoutes = require('./routes/userRoutes')
 const messagesRoute = require('./routes/messagesRoute')
+const createServerRoute = require('./routes/createServerRoute')
 const {
     userJoin,
     getCurrentUser,
@@ -33,8 +34,8 @@ mongoose.connect(process.env.MONGO_URL, {
 app.use('/auth', createUserRoutes)
 app.use('/api', expressjwt({ secret: process.env.SECRET, algorithms: ['HS256'] }))
 app.use('/api', userRoutes)
-app.use('/api/message', messagesRoute)
-
+app.use('/api', createServerRoute)
+app.use('/api', messagesRoute)
 const server = app.listen(process.env.PORT, () => {
     console.log(`Server Started on Port ${process.env.PORT}`)
 })
@@ -55,9 +56,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinRoom", ({username, room}) => {
+    console.log([username, room])
     const user = userJoin(socket.id, username, room)
     socket.join(user.room)
-    console.log(user)
+    
+    socket.broadcast
+      .to(user.room)
+      .emit(
+        'message',
+        'has joined the chat'
+      )
+
+
   });
 
   socket.on('shout-msg', (data) => {

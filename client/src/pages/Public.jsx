@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useContext, } from 'react'
-
 import styled from 'styled-components'
 import { useLocation } from 'react-router-dom'
-
 import { useNavigate } from 'react-router';
-import { allUsersRoute, host } from '../utils/APIRoutes';
+import { allUsersRoute, host, getServerRoute } from '../utils/APIRoutes';
 import { UserContext } from "../context/UserProvider";
+import ServerContainer from '../components/ServerContainer'
+import Servers from '../components/Servers'
 import Contacts from '../components/Contacts'
 import Welcome from '../components/Welcome'
 import ChatContainer from '../components/ChatContainer'
@@ -15,11 +15,9 @@ export default function Chat() {
 	const [currentUser, setCurrentUser] = useState([]);
     const navigate = useNavigate()
     const [contacts, setContacts] = useState([])
-    const [currentChat, setCurrentChat] = useState([undefined])
-    
-		const location = useLocation();
-  	console.log(location.pathname);
-		const socket= useRef()
+    const [currentServer, setCurrentServer] = useState([undefined])
+    const [servers, setServers] = useState([])
+	const socket= useRef()
     const username = currentUser.username
     const room = 'room'
     useEffect(() => {
@@ -33,39 +31,31 @@ export default function Chat() {
         CheckIfLoggedIn()
     }, [])
 
-		useEffect(() => {
-			if (currentUser.length !== 0) {
-				socket.current = io(host)
-				socket.current.emit('joinRoom', ({username, room}))
-			}
-		}, [currentUser])
-
     useEffect(() => {
-
-        const getContacts = async () => {
-            if (currentUser.length !== 0) {
-                if (currentUser.isAvatarImageSet) {
-                    const data = await userAxios.get(`${allUsersRoute}/${currentUser._id}`)
-                    setContacts(data.data)
-                } else {
-                    navigate('/setavatar')
-                }
-            }
-        }
-        getContacts()
+		const getServers = async () => {
+			if(currentUser.length !== 0) {
+				if(currentUser.isAvatarImageSet) {
+					const data = await userAxios.get(`${getServerRoute}`)
+					setServers(data.data)
+				}
+			}
+		}
+		getServers()
     }, [currentUser])
-		let handleChatChange = (chat) => {
-			setCurrentChat(chat)
+		let handleServerChange = (server) => {
+			console.log(server)
+			setCurrentServer(server)
+			
 		}
     return (
 		<Container>
 			<div className='container'>
-				<Contacts contacts={contacts} currentUser={currentUser} changeChat={handleChatChange} />
+				<Servers contacts={contacts} currentUser={currentUser} changeServer={handleServerChange} servers={servers}/>
 				{
-					currentChat.length === 1 ? (
+					currentServer.length === 1 ? (
 						<Welcome currentUser={currentUser} />
 					) : (
-						<ChatContainer currentChat={currentChat} currentUser={currentUser} socket={socket}/>
+						<ServerContainer  currentChat={currentServer} currentUser={currentUser} socket={socket} />
 					)
 				}
 			</div>

@@ -12,12 +12,12 @@ export default function Navbar() {
                         Server
                     </h1>
                 </div>
-                <div className='link mid' onClick={()=> navigate('/private')}>
+                <div className='link mid' onClick={()=> navigate('/')}>
                     <h1>
                         Private
                     </h1>
                 </div>
-                <div className='link middle'>
+                <div className='link middle' onClick={()=> navigate('/create')}>
                     <h1>
                         Create
                     </h1>

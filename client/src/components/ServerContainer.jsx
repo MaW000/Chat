@@ -1,81 +1,62 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
 import styled from 'styled-components'
-import { sendMessageRoute, getMessagesRoute } from '../utils/APIRoutes'
+import { sendMessageServerRoute, getMessagesRoute, sendMessageRoute,host } from '../utils/APIRoutes'
 import ChatInput from './ChatInput'
-import axios from 'axios'
+import { io } from 'socket.io-client'
 import { UserContext } from "../context/UserProvider";
 export default function ChatContainer({currentChat, currentUser, socket}) {
-    const { userAxios } = useContext(UserContext)
-    const [messages, setMessages] = useState([])
-    const [arrivalMessage, setArrivalMessage] = useState(null)
-    const scrollRef = useRef()
+  const { userAxios } = useContext(UserContext)
+  const [messages, setMessages] = useState([])
+  const [arrivalMessage, setArrivalMessage] = useState(null)
+  const scrollRef = useRef()
+  console.log([currentChat, currentUser, socket])
+
+
+  useEffect(() => {
+    const getMessages = async() => {
+        const res = await userAxios.post(getMessagesRoute, {
+            from: currentUser._id,
+            to: currentChat._id
+        })
+        setMessages(res.data)
+    }
+    if (currentChat) {getMessages()}
+  }, [currentChat])
+  
+  useEffect(() => {
+    let username = currentUser.username
+    let room = currentChat.server
+		if (currentUser.length !== 0) {
+			socket.current = io(host)
+			socket.current.emit('joinRoom', ({username, room}))
+		}
+	}, [currentUser])
+  const handleSendMsg = async (msg) => {
+    const data = await JSON.parse(
+      localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+    );
     
-    useEffect(() => {
-        const getMessages = async() => {
-            const res = await userAxios.post(getMessagesRoute, {
-                from: currentUser._id,
-                to: currentChat._id
-            })
-            setMessages(res.data)
-        }
-        if (currentChat) {getMessages()}
-    }, [currentChat])
-    useEffect(() => {
-        const getCurrentChat = async () => {
-          if (currentChat) {
-            await JSON.parse(
-              localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-            )._id;
-          }
-        };
-        getCurrentChat();
-      }, [currentChat]);
     
-      const handleSendMsg = async (msg) => {
-        const data = await JSON.parse(
-          localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-        );
-        socket.current.emit("send-msg", {
-          to: currentChat._id,
-          from: data._id,
-          msg,
-        });
-        await userAxios.post(sendMessageRoute, {
-          from: data._id,
-          to: currentChat._id,
-          message: msg,
-        });
-    
-        const msgs = [...messages];
-        msgs.push({ fromSelf: true, message: msg });
-        setMessages(msgs);
-      };
-    
-      useEffect(() => {
-        if (socket.current) {
-          socket.current.on("msg-recieve", (msg) => {
-            console.log(msg)
-            setArrivalMessage({ fromSelf: false, message: msg });
-          });
-        }
-      }, []);
-    
-      useEffect(() => {
-        arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
-      }, [arrivalMessage]);
-    
-      useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, [messages]);
+
+    await userAxios.post(sendMessageRoute, {
+      from: data._id,
+      to: currentChat._id,
+      message: msg,
+    });
+    const msgs = [...messages];
+    msgs.push({ fromSelf: true, message: msg});
+    setMessages(msgs)
+  };
+  
   return (
     <Container>
         <div className="chat-header">
             <div className="user-details">
                 <div className="avatar">
-                    <img src={`data:image/svg+xml;base64, ${currentChat.avatarImage}`} alt="avatar"/>
+                    <img src={`data:image/png;base64,${currentChat.avatarImage}`} alt="avatar"/>
                 </div>
                 <div className="username">
-                    <h3>{currentChat.username}</h3>
+                    <h3>{currentChat.server}</h3>
                 </div>
             </div>
         </div>
@@ -177,4 +158,3 @@ const Container = styled.div`
     }
   }
 `
-
