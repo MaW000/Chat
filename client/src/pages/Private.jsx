@@ -53,10 +53,10 @@ export default function Chat() {
     }, [currentUser])
 		let handleChatChange = (chat) => {
 			
-			console.log(chat)
+			
 			setCurrentChat(chat)
 		}
-	console.log([socket, 12])
+	
     return (
 		<Container>
 			<div className='container'>

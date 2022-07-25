@@ -13,7 +13,7 @@ export default function Contacts({contacts, currentUser, changeChat}) {
         }
     }, [currentUser])
     const changeCurrentChat = (index, contact) => {
-		console.log(contact)
+		
 		
         setCurrentSelected(index)
         changeChat(contact)

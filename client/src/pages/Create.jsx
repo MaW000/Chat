@@ -17,7 +17,7 @@ export default function Create() {
             })
               .then(res => setResponse(res.data.msg))
             setServerName('')
-            console.log(rest)
+           
         }
         createServer()
     }

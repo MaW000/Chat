@@ -25,13 +25,12 @@ export default function RegisterUser() {
     }, []);
     const handleChange = (e) => {
         setValues({ ...values, [e.target.name]: e.target.value})
-        console.log(values)
+       
     }
 
     const handleValidation = () => {
         const { password, confirmPassword, username } = values
-        console.log(password)
-        console.log(confirmPassword)
+    
         if (password !== confirmPassword) {
             toast.error(
                 "Password and confirm password should be the same.",
@@ -67,7 +66,7 @@ export default function RegisterUser() {
                 toast.error(data.msg, toastOptions)
             }
             if (data.status === true) {
-                console.log(data)
+               
                 localStorage.setItem(
                     process.env.REACT_APP_LOCALHOST_KEY, 
                     JSON.stringify(data.user)

@@ -43,7 +43,7 @@ export default function Chat() {
 		getServers()
     }, [currentUser])
 		let handleServerChange = (server) => {
-			console.log(server)
+			
 			setCurrentServer(server)
 			
 		}

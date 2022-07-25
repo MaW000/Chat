@@ -10,12 +10,7 @@ const createUserRoutes = require('./routes/createUserRoutes')
 const userRoutes = require('./routes/userRoutes')
 const messagesRoute = require('./routes/messagesRoute')
 const createServerRoute = require('./routes/createServerRoute')
-const {
-    userJoin,
-    getCurrentUser,
-    userLeave,
-    getRoomUsers
-  } = require('./utils/users');
+const {userJoin} = require('./utils/users');
 app.use((cors()))
 app.use(express.json())
 app.use(morgan('dev'))
@@ -52,14 +47,13 @@ io.on("connection", (socket) => {
   global.chatSocket = socket;
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
-    console.log(onlineUsers)
   });
 
   socket.on("joinRoom", ({username, room}) => {
-    console.log([username, room])
+    
     const user = userJoin(socket.id, username, room)
     socket.join(user.room)
-    
+   
     socket.broadcast
       .to(user.room)
       .emit(
@@ -70,16 +64,15 @@ io.on("connection", (socket) => {
 
   });
 
-  socket.on('shout-msg', (data) => {
-    console.log(data)
+  socket.on('send-server-msg', ({from,to, msg,username}) => {
+    
+    const message = [username, msg]
+    socket.broadcast.to(to).emit('msg-recieve-server', message)
   })
 
   socket.on("send-msg", (data) => {
     const sendUserSocket = onlineUsers.get(data.to);
-    console.log(onlineUsers)
-    console.log(sendUserSocket)
     if (sendUserSocket) {
-        console.log(data)
       socket.to(sendUserSocket).emit("msg-recieve", data.msg);
     }
   });

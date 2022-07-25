@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
 import styled from 'styled-components'
-import { sendMessageServerRoute, getMessagesRoute, sendMessageRoute,host } from '../utils/APIRoutes'
+import { getMessageServerRoute, getMessagesRoute, sendMessageRoute,host } from '../utils/APIRoutes'
 import ChatInput from './ChatInput'
 import { io } from 'socket.io-client'
 import { UserContext } from "../context/UserProvider";
@@ -9,45 +9,66 @@ export default function ChatContainer({currentChat, currentUser, socket}) {
   const [messages, setMessages] = useState([])
   const [arrivalMessage, setArrivalMessage] = useState(null)
   const scrollRef = useRef()
-  console.log([currentChat, currentUser, socket])
-
-
+  
+  let username = currentUser.username
+  let room = currentChat.server
+  socket.current = io(host)
   useEffect(() => {
     const getMessages = async() => {
-        const res = await userAxios.post(getMessagesRoute, {
+        
+        const res = await userAxios.post(getMessageServerRoute, {
             from: currentUser._id,
             to: currentChat._id
         })
+        
         setMessages(res.data)
     }
     if (currentChat) {getMessages()}
   }, [currentChat])
-  
+ 
   useEffect(() => {
-    let username = currentUser.username
-    let room = currentChat.server
 		if (currentUser.length !== 0) {
-			socket.current = io(host)
 			socket.current.emit('joinRoom', ({username, room}))
 		}
 	}, [currentUser])
+
+  useEffect(() => {
+    if(socket.current) {
+      socket.current.on('msg-recieve-server', (msg) => {
+        console.log(msg)
+        setArrivalMessage({ fromSelf: false, message: msg[1], username: msg[0] });
+      })
+    }
+  }, [])
   const handleSendMsg = async (msg) => {
     const data = await JSON.parse(
       localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
     );
     
-    
+    socket.current.emit('send-server-msg', {
+      to: currentChat.server,
+      from: data._id,
+      msg,
+      username
+    });
 
     await userAxios.post(sendMessageRoute, {
       from: data._id,
       to: currentChat._id,
       message: msg,
+      username: username
     });
     const msgs = [...messages];
     msgs.push({ fromSelf: true, message: msg});
     setMessages(msgs)
   };
-  
+
+  useEffect(() => {
+    arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
+  }, [arrivalMessage])
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   return (
     <Container>
         <div className="chat-header">
@@ -63,14 +84,15 @@ export default function ChatContainer({currentChat, currentUser, socket}) {
         <div className='chat-messages'>
             {
                 messages && messages.map((message, index) => {
+                  
                     return (
                         <div key={index} ref={scrollRef}>
                             <div className={`message ${message.fromSelf ? "sended" : "received"}`}>
-                                <div className='content'>
-                                    <p>
-                                        {message.message}
-                                    </p>
-                                </div>
+                              <div className='content'>
+                                <p>
+                                {message.username ? `${message.username}: ${message.message}` : message.message}
+                                </p>
+                              </div>
                             </div>
                         </div>
                     )
@@ -150,10 +172,13 @@ const Container = styled.div`
       }
     }
     .received {
-      justify-content: flex-start;
       .content {
         background-color: #9900ff20;
         padding: .1rem 1rem;
+        h1 {
+          color: #221b1b;
+          font-size: 1.2rem;
+        }
       }
     }
   }

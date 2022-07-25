@@ -1,9 +1,8 @@
 import React, { useEffect, useState} from 'react'
-
+import { useNavigate } from 'react-router';
 import axios from 'axios'
 
 export const UserContext = React.createContext()
-
 const userAxios = axios.create()
 
 userAxios.interceptors.request.use(config => {
@@ -12,15 +11,18 @@ userAxios.interceptors.request.use(config => {
     return config
 })
 
-export default function UserProvider(props){
-    
+function logout(){
+    localStorage.removeItem('chat-app-current-user')
+    localStorage.removeItem('chat-app-current-user-token')
+    window.location.reload(false);
+}
 
-       
+export default function UserProvider(props){
     return(
         <UserContext.Provider
             value={{
                 userAxios,
-                
+                logout
             }}
         >
         { props.children}

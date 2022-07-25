@@ -1,8 +1,11 @@
-import React  from 'react'
+import React, { useContext }  from 'react'
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import { UserContext } from '../context/UserProvider';
 export default function Navbar() {
+    const { logout } = useContext(UserContext)
     const navigate = useNavigate()
+    
   return (
     <Container>
         <div className='nav'>
@@ -22,7 +25,7 @@ export default function Navbar() {
                         Create
                     </h1>
                 </div>
-                <div className='link last'>
+                <div className='link last' onClick={() => logout()}>
                     <h1>
                         Logout
                     </h1>
